@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CivicPulse AI Engine — Multimodal Fusion Intelligence Observatory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #05070d;
+    --panel: #0a0e18;
+    --panel-2: #0d1220;
+    --line: rgba(255,255,255,0.08);
+    --line-soft: rgba(255,255,255,0.05);
+    --text: #e7ebf5;
+    --muted: #8892a8;
+    --dim: #576079;
+
+    --c-geo: #34d399;
+    --c-sem: #4d9fff;
+    --c-vis: #b18cf7;
+    --c-temp: #fb923c;
+    --c-cat: #f2c744;
+    --c-fusion: #38bdf8;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -5%, rgba(77,159,255,0.14), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 90% 20%, rgba(52,211,153,0.08), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 5% 60%, rgba(177,140,247,0.08), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    overflow-x:hidden;
+    min-height:100vh;
+  }
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  .display{font-family:'Space Grotesk', sans-serif;}
+
+  /* ---------- background grid + noise ---------- */
+  .bg-grid{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px);
+    background-size:56px 56px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 20%, black 30%, transparent 90%);
+  }
+  .stars{position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0.5;}
+
+  /* ---------- shell ---------- */
+  .wrap{position:relative; z-index:1; max-width:1440px; margin:0 auto; padding:0 32px;}
+
+  nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 0; border-bottom:1px solid var(--line-soft);
+  }
+  .brand{display:flex; align-items:center; gap:10px; text-decoration:none; color:inherit;}
+  .brand .mark{
+    width:30px; height:30px; border-radius:8px;
+    background:linear-gradient(135deg, var(--c-sem), var(--c-vis));
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:14px; color:#04070f;
+  }
+  .brand span{font-weight:600; letter-spacing:0.2px; font-size:15px;}
+  .navlinks{display:flex; gap:34px; font-size:13.5px; color:var(--muted);}
+  .navlinks a{color:var(--muted); text-decoration:none; transition:color .2s;}
+  .navlinks a:hover{color:var(--text);}
+  .live-pill{
+    display:flex; align-items:center; gap:7px; font-size:12px; color:var(--muted);
+    border:1px solid var(--line); padding:6px 12px; border-radius:100px;
+  }
+  .live-dot{width:6px; height:6px; border-radius:50%; background:var(--c-geo); box-shadow:0 0 8px var(--c-geo); animation:pulse-dot 1.8s infinite;}
+  @keyframes pulse-dot{0%,100%{opacity:1;} 50%{opacity:.35;}}
+
+  /* ---------- hero ---------- */
+  .hero{padding:64px 0 8px; text-align:center;}
+  .badge{
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid rgba(77,159,255,0.35);
+    background:rgba(77,159,255,0.08);
+    color:#a9c9ff; font-size:11.5px; letter-spacing:0.06em;
+    padding:7px 16px; border-radius:100px; margin-bottom:26px;
+  }
+  .badge svg{width:12px; height:12px;}
+  h1.title{
+    font-size:clamp(40px, 6vw, 74px);
+    line-height:1.02;
+    font-weight:700;
+    letter-spacing:-0.02em;
+    background:linear-gradient(105deg, #ffffff 10%, #9fc4ff 45%, #c9a8ff 75%, #ffffff 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .hero p.sub{
+    max-width:640px; margin:22px auto 0; color:var(--muted); font-size:16.5px; line-height:1.6;
+  }
+
+  /* ---------- main grid: left steps / center 3d / right stats ---------- */
+  .stage{
+    display:grid;
+    grid-template-columns: 250px 1fr 300px;
+    gap:20px;
+    margin-top:56px;
+    align-items:start;
+    position:relative;
+  }
+  @media (max-width: 1180px){
+    .stage{grid-template-columns:1fr; }
+  }
+
+  .panel{
+    background:linear-gradient(180deg, var(--panel), var(--panel-2));
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:22px;
+  }
+  .panel-title{
+    font-size:11px; letter-spacing:0.08em; color:var(--dim);
+    display:flex; align-items:center; gap:8px; margin-bottom:20px;
+  }
+  .panel-title::before{content:""; width:14px; height:1px; background:var(--dim);}
+
+  /* how it works timeline */
+  .steps{position:relative;}
+  .step{position:relative; padding-left:38px; padding-bottom:26px;}
+  .step:last-child{padding-bottom:0;}
+  .step::before{
+    content:""; position:absolute; left:11px; top:26px; bottom:0; width:1px;
+    background:linear-gradient(var(--line), transparent);
+  }
+  .step:last-child::before{display:none;}
+  .step-icon{
+    position:absolute; left:0; top:0; width:24px; height:24px; border-radius:7px;
+    background:var(--panel-2); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:12px;
+  }
+  .step h4{font-size:13.5px; font-weight:600; margin-bottom:4px;}
+  .step p{font-size:12.3px; color:var(--muted); line-height:1.5;}
+
+  /* center 3d + engines */
+  .center-col{display:flex; flex-direction:column; gap:16px; position:relative;}
+  .stage3d-frame{
+    position:relative;
+    border:1px solid var(--line);
+    border-radius:18px;
+    background:radial-gradient(ellipse 60% 60% at 50% 45%, rgba(77,159,255,0.10), transparent 70%), var(--panel);
+    overflow:hidden;
+    height:560px;
+  }
+  #canvas-holder{position:absolute; inset:0; cursor:grab;}
+  #canvas-holder:active{cursor:grabbing;}
+  
+  .drag-hint{
+    position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+    font-size:11px; color:var(--dim); display:flex; align-items:center; gap:8px;
+    padding:6px 14px; border:1px solid var(--line); border-radius:100px; background:rgba(5,7,15,0.7);
+    backdrop-filter:blur(8px);
+    pointer-events:none;
+    transition:opacity .3s;
+    z-index:5;
+  }
+  .drag-hint kbd{
+    background:rgba(255,255,255,0.08); padding:1px 5px; border-radius:4px; font-size:10px; font-family:'IBM Plex Mono', monospace;
+  }
+  
+  /* Floating hover 3D tooltip */
+  .node-hover-tooltip{
+    position:absolute; pointer-events:none; transform:translate(-50%, -100%);
+    margin-top:-14px; padding:6px 12px; border-radius:8px;
+    background:rgba(8,12,24,0.92); border:1px solid rgba(255,255,255,0.18);
+    box-shadow:0 8px 24px rgba(0,0,0,0.6);
+    font-family:'IBM Plex Mono', monospace; font-size:11px;
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    opacity:0; transition:opacity .2s, transform .2s; z-index:15;
+  }
+  .node-hover-tooltip .th-title{font-weight:600; letter-spacing:0.04em;}
+  .node-hover-tooltip .th-sub{font-size:9.5px; color:var(--dim);}
+  .node-hover-tooltip.visible{opacity:1; transform:translate(-50%, -100%) scale(1);}
+
+  .engine-tag{
+    position:absolute; pointer-events:auto; transform:translate(-50%,-50%);
+    font-family:'IBM Plex Mono', monospace; font-size:10.5px;
+    padding:4px 10px; border-radius:6px; border:1px solid; white-space:nowrap;
+    opacity:0; transition:opacity .25s, transform .2s, background .2s, border-color .2s;
+    cursor:pointer; z-index:10;
+  }
+  .engine-tag:hover{
+    transform:translate(-50%,-50%) scale(1.08);
+    box-shadow:0 0 16px currentColor;
+  }
+  .engine-tag.active{
+    background:#ffffff !important;
+    color:#04070f !important;
+    border-color:#ffffff !important;
+    font-weight:700;
+    box-shadow:0 0 20px rgba(255,255,255,0.6);
+  }
+
+  .engine-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:12px;}
+  @media (max-width:900px){.engine-grid{grid-template-columns:repeat(2,1fr);}}
+  .engine-card{
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px 14px;
+    background:var(--panel);
+    position:relative;
+    overflow:hidden;
+    cursor:pointer;
+    transition:border-color .25s, transform .25s, background .25s, box-shadow .25s;
+  }
+  .engine-card::before{
+    content:""; position:absolute; inset:0; opacity:0.07; pointer-events:none;
+    background:radial-gradient(circle at 30% 0%, var(--ac), transparent 65%);
+    transition:opacity .25s;
+  }
+  .engine-card:hover{transform:translateY(-3px); border-color:var(--ac); box-shadow:0 8px 24px rgba(0,0,0,0.4);}
+  .engine-card.active{
+    border-color:var(--ac);
+    background:color-mix(in srgb, var(--ac) 10%, var(--panel));
+    transform:translateY(-4px);
+    box-shadow:0 0 24px color-mix(in srgb, var(--ac) 30%, transparent);
+  }
+  .engine-card.active::before{opacity:0.25;}
+  .e-num{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ac); font-weight:600;}
+  .e-icon{
+    width:34px; height:34px; border-radius:9px; margin:10px 0 12px;
+    display:flex; align-items:center; justify-content:center;
+    background:color-mix(in srgb, var(--ac) 16%, transparent);
+    border:1px solid color-mix(in srgb, var(--ac) 45%, transparent);
+    color:var(--ac); font-size:15px;
+  }
+  .engine-card h4{font-size:13.5px; font-weight:600; margin-bottom:6px;}
+  .engine-card p{font-size:11.6px; color:var(--muted); line-height:1.48; min-height:52px;}
+  .e-weight{
+    margin-top:10px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ac);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .e-bar{height:3px; border-radius:2px; background:var(--line-soft); margin-top:6px; overflow:hidden;}
+  .e-bar i{display:block; height:100%; background:var(--ac); border-radius:2px; transition:width .4s;}
+
+  /* right column: fusion score + decision */
+  .right-col{display:flex; flex-direction:column; gap:16px;}
+  .gauge-wrap{display:flex; flex-direction:column; align-items:center; padding-top:6px;}
+  .gauge{position:relative; width:190px; height:190px;}
+  .gauge svg{transform:rotate(-90deg);}
+  .gauge-label{
+    position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .gauge-label .pct{font-family:'Space Grotesk',sans-serif; font-size:36px; font-weight:700; color:var(--c-geo);}
+  .gauge-label .tag{font-size:9.5px; letter-spacing:0.06em; color:var(--muted); margin-top:4px; text-align:center; max-width:110px;}
+  .legend{width:100%; margin-top:22px; display:flex; flex-direction:column; gap:11px;}
+  .legend-row{display:flex; align-items:center; justify-content:space-between; font-size:12.5px; cursor:pointer; padding:3px 6px; border-radius:6px; transition:background .2s;}
+  .legend-row:hover{background:rgba(255,255,255,0.04);}
+  .legend-row .l-left{display:flex; align-items:center; gap:9px; color:var(--text);}
+  .dot{width:8px; height:8px; border-radius:50%;}
+  .legend-row .val{font-family:'IBM Plex Mono',monospace; color:var(--muted);}
+
+  .decision-box{padding:20px;}
+  .decision-head{display:flex; align-items:center; gap:8px; font-size:12px; color:#a9c9ff; margin-bottom:12px;}
+  .decision-box p{font-size:13px; color:var(--muted); line-height:1.55; margin-bottom:16px;}
+  .btn{
+    width:100%; padding:11px 14px; border-radius:10px; border:1px solid rgba(77,159,255,0.4);
+    background:rgba(77,159,255,0.1); color:#bcd6ff; font-size:12.8px; font-weight:500;
+    display:flex; align-items:center; justify-content:space-between; cursor:pointer;
+    transition:background .2s, border-color .2s;
+    font-family:'Inter',sans-serif;
+  }
+  .btn:hover{background:rgba(77,159,255,0.2); border-color:rgba(77,159,255,0.7);}
+
+  /* ========================================================================= */
+  /* PREMIUM ENGINE INSPECTION DETAIL PANEL (GLASSMORPHISM)                     */
+  /* ========================================================================= */
+  .detail-drawer{
+    position:absolute; top:0; right:0; bottom:0;
+    width:420px; max-width:100%;
+    background:rgba(10, 14, 26, 0.94);
+    backdrop-filter:blur(24px) saturate(180%);
+    -webkit-backdrop-filter:blur(24px) saturate(180%);
+    border-left:1px solid rgba(255,255,255,0.12);
+    border-radius:0 18px 18px 0;
+    z-index:25;
+    padding:28px 24px;
+    display:flex; flex-direction:column; justify-content:space-between;
+    box-shadow:-12px 0 40px rgba(0,0,0,0.75);
+    transform:translateX(102%);
+    opacity:0;
+    pointer-events:none;
+    transition:transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+    overflow-y:auto;
+  }
+  .detail-drawer.open{
+    transform:translateX(0);
+    opacity:1;
+    pointer-events:auto;
+  }
+  @media (max-width:768px){
+    .detail-drawer{
+      position:fixed; top:auto; bottom:0; left:0; right:0;
+      width:100%; height:82vh;
+      border-radius:24px 24px 0 0;
+      border-left:none; border-top:1px solid rgba(255,255,255,0.15);
+      transform:translateY(102%);
+      box-shadow:0 -16px 50px rgba(0,0,0,0.85);
+    }
+    .detail-drawer.open{transform:translateY(0);}
+  }
+
+  .drawer-head{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+    padding-bottom:16px; border-bottom:1px solid var(--line-soft);
+  }
+  .drawer-badge-group{display:flex; align-items:center; gap:8px;}
+  .drawer-num{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; font-weight:700;
+    padding:2px 8px; border-radius:6px; border:1px solid;
+  }
+  .drawer-type-pill{
+    font-size:10px; font-family:'IBM Plex Mono', monospace; letter-spacing:0.06em;
+    color:var(--dim); text-transform:uppercase;
+  }
+  .close-btn{
+    width:32px; height:32px; border-radius:8px; border:1px solid var(--line);
+    background:rgba(255,255,255,0.04); color:var(--muted); font-size:18px;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition:all .2s;
+  }
+  .close-btn:hover{background:rgba(255,255,255,0.1); color:#fff; border-color:rgba(255,255,255,0.3);}
+
+  .drawer-body{display:flex; flex-direction:column; gap:20px; padding:18px 0; flex-grow:1;}
+  .drawer-title-block h3{
+    font-family:'Space Grotesk', sans-serif; font-size:24px; font-weight:700;
+    letter-spacing:-0.02em; color:#fff; margin-bottom:6px;
+  }
+  .drawer-title-block p.tagline{
+    font-size:12.5px; color:var(--muted); line-height:1.5;
+  }
+
+  .section-label{
+    font-family:'IBM Plex Mono', monospace; font-size:10px; font-weight:600;
+    letter-spacing:0.08em; color:var(--dim); text-transform:uppercase; margin-bottom:8px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .section-label::before{content:""; width:10px; height:1px; background:currentColor;}
+
+  .desc-box{
+    font-size:12.8px; color:var(--text); line-height:1.6;
+    background:rgba(255,255,255,0.025); border:1px solid var(--line-soft);
+    border-radius:10px; padding:12px 14px;
+  }
+
+  /* pipeline visual in drawer */
+  .pipeline-steps{display:flex; flex-direction:column; gap:6px;}
+  .p-step{
+    display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px;
+    background:rgba(255,255,255,0.02); border:1px solid var(--line-soft);
+    font-size:11.8px; font-family:'IBM Plex Mono', monospace;
+  }
+  .p-step .arrow-sm{color:var(--dim); font-size:10px;}
+  .p-step .p-node{
+    width:18px; height:18px; border-radius:50%; display:flex; align-items:center;
+    justify-content:center; font-size:9px; font-weight:bold;
+  }
+
+  /* live example card in drawer */
+  .example-card{
+    background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    border:1px solid var(--line); border-radius:12px; padding:14px;
+  }
+  .example-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    padding:5px 0; font-size:11.8px; border-bottom:1px solid rgba(255,255,255,0.04);
+  }
+  .example-row:last-child{border-bottom:none;}
+  .example-row .ex-k{color:var(--dim); font-family:'IBM Plex Mono', monospace; font-size:10.5px;}
+  .example-row .ex-v{color:#fff; font-weight:500;}
+
+  /* score & weight gauge in drawer */
+  .score-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .score-stat{
+    background:rgba(255,255,255,0.025); border:1px solid var(--line-soft);
+    border-radius:10px; padding:12px;
+  }
+  .score-stat .s-lbl{font-size:10px; font-family:'IBM Plex Mono', monospace; color:var(--dim);}
+  .score-stat .s-val{font-family:'Space Grotesk', sans-serif; font-size:26px; font-weight:700; margin-top:2px;}
+
+  .importance-callout{
+    border-left:2px solid; padding:8px 12px; font-size:11.8px; color:var(--muted); line-height:1.55;
+    background:rgba(255,255,255,0.02); border-radius:0 8px 8px 0;
+  }
+
+  .drawer-footer{
+    padding-top:16px; border-top:1px solid var(--line-soft);
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+  .nav-arrow-btn{
+    padding:8px 12px; border-radius:8px; border:1px solid var(--line);
+    background:rgba(255,255,255,0.03); color:var(--text); font-size:12px;
+    display:flex; align-items:center; gap:6px; cursor:pointer; transition:background .2s;
+  }
+  .nav-arrow-btn:hover{background:rgba(255,255,255,0.08);}
+  .reset-core-btn{
+    padding:8px 14px; border-radius:8px; border:1px solid rgba(77,159,255,0.35);
+    background:rgba(77,159,255,0.12); color:#a9c9ff; font-size:11.5px;
+    font-family:'IBM Plex Mono', monospace; font-weight:600; cursor:pointer;
+    transition:all .2s;
+  }
+  .reset-core-btn:hover{background:rgba(77,159,255,0.22); border-color:rgba(77,159,255,0.6);}
+
+  /* ---------- live process flow ---------- */
+  .flow-section{margin-top:70px;}
+  .flow-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px;}
+  .flow-head h2{font-size:22px; font-weight:600;}
+  .flow-head .sub2{color:var(--muted); font-size:13px; margin-top:4px;}
+
+  .flow-row{
+    display:grid;
+    grid-template-columns: 1.1fr 1fr 1fr 1fr 1fr 1fr 1.05fr;
+    gap:10px;
+    align-items:stretch;
+  }
+  @media (max-width: 1180px){
+    .flow-row{grid-template-columns:1fr; }
+    .arrow{display:none;}
+  }
+  .flow-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px;
+    display:flex; flex-direction:column; justify-content:space-between; min-height:190px;
+    cursor:pointer; transition:transform .2s, border-color .2s;
+  }
+  .flow-card:hover{transform:translateY(-2px); border-color:var(--ac2);}
+  .flow-card .tag{font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.05em; color:var(--ac2, var(--muted));}
+  .flow-card .name{font-size:12.5px; color:var(--muted); margin-top:6px;}
+  .flow-card .score{font-family:'Space Grotesk',sans-serif; font-size:27px; font-weight:700; margin-top:auto;}
+  .flow-card .score-lbl{font-size:10.5px; color:var(--dim); margin-top:2px;}
+  .mini-viz{height:44px; display:flex; align-items:end; gap:3px; margin:12px 0;}
+  .mini-viz i{flex:1; background:var(--ac2); border-radius:2px 2px 0 0; opacity:0.55;}
+
+  .input-card{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:10px;}
+  .input-card img{width:100%; height:96px; object-fit:cover; border-radius:9px; border:1px solid var(--line);}
+  .input-card .loc{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--c-geo);}
+  .input-card blockquote{font-size:12.4px; color:var(--muted); font-style:italic; line-height:1.45;}
+
+  .output-card{
+    background:linear-gradient(180deg, rgba(52,211,153,0.10), var(--panel));
+    border:1px solid rgba(52,211,153,0.35); border-radius:14px; padding:18px;
+    display:flex; flex-direction:column; align-items:center; text-align:center;
+    cursor:pointer; transition:all .2s;
+  }
+  .output-card:hover{border-color:var(--c-geo); transform:translateY(-2px);}
+  .output-card .tag{color:var(--c-geo);}
+  .output-card .score{color:var(--c-geo); font-size:34px;}
+  .output-pill{
+    margin-top:10px; font-size:10.5px; padding:4px 10px; border-radius:100px;
+    background:rgba(52,211,153,0.18); color:var(--c-geo); border:1px solid rgba(52,211,153,0.4);
+  }
+  .output-action{margin-top:14px; font-size:11.5px; color:var(--muted); display:flex; align-items:center; gap:6px;}
+
+  .arrow{display:flex; align-items:center; justify-content:center; color:var(--dim); font-size:16px;}
+
+  /* ---------- footer features ---------- */
+  .features{
+    margin-top:70px; padding:34px 0 60px;
+    border-top:1px solid var(--line-soft);
+    display:grid; grid-template-columns:repeat(6,1fr); gap:22px;
+  }
+  @media (max-width:980px){.features{grid-template-columns:repeat(3,1fr);}}
+  @media (max-width:600px){.features{grid-template-columns:repeat(2,1fr);}}
+  .feature{display:flex; flex-direction:column; gap:9px;}
+  .feature .ico{width:30px; height:30px; display:flex; align-items:center; justify-content:center; color:#a9c9ff; font-size:15px;}
+  .feature h5{font-size:12.8px; font-weight:600;}
+  .feature p{font-size:11.4px; color:var(--dim); line-height:1.5;}
+
+  ::selection{background:rgba(77,159,255,0.35);}
+</style>
+</head>
+<body>
+
+<canvas class="stars" id="stars"></canvas>
+<div class="bg-grid"></div>
+
+<div class="wrap">
+
+  <nav>
+    <a href="/" class="brand"><div class="mark">C</div><span>CivicPulse</span></a>
+    <div class="navlinks">
+      <a href="#engines">Engines</a>
+      <a href="#flow">Live flow</a>
+      <a href="#features">Platform</a>
+      <a href="/operations/intelligence">Intelligence Command</a>
+    </div>
+    <div class="live-pill"><span class="live-dot"></span> Live engine · Surat, Gujarat</div>
+  </nav>
+
+  <header class="hero">
+    <div class="badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#a9c9ff" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+      POWERED BY MULTIMODAL INTELLIGENCE
+    </div>
+    <h1 class="title">CivicPulse AI Engine</h1>
+    <p class="sub">Five intelligence layers work together to detect, correlate and prioritize real‑world civic issues with precision — click any engine node or central core to inspect its internals.</p>
+  </header>
+
+  <section class="stage" id="engines">
+
+    <!-- LEFT: how it works -->
+    <div class="panel">
+      <div class="panel-title">HOW IT WORKS</div>
+      <div class="steps">
+        <div class="step"><div class="step-icon">📝</div><h4>New report</h4><p>Citizen submits a report with location, description &amp; optional photo.</p></div>
+        <div class="step"><div class="step-icon">🧠</div><h4>AI signal extraction</h4><p>Our AI engines extract meaning, context, visuals, location &amp; time signals.</p></div>
+        <div class="step"><div class="step-icon">🔗</div><h4>Multimodal fusion</h4><p>Signals are fused using dynamic weights to calculate a correlation score.</p></div>
+        <div class="step"><div class="step-icon">🎯</div><h4>Smart decision</h4><p>High score? Linked to existing incident. Low score? New incident created.</p></div>
+        <div class="step"><div class="step-icon">📊</div><h4>Actionable intelligence</h4><p>Operators get prioritized intelligence with full evidence &amp; context.</p></div>
+      </div>
+    </div>
+
+    <!-- CENTER: 3D core + engine cards -->
+    <div class="center-col">
+      <div class="stage3d-frame" id="stageFrame">
+        <div id="canvas-holder"></div>
+        
+        <!-- Floating Hover Tooltip for 3D Raycasting -->
+        <div id="hoverTooltip" class="node-hover-tooltip">
+          <span class="th-title" id="hoverTitle">SEMANTIC ENGINE</span>
+          <span class="th-sub">Click to inspect internal AI pipeline</span>
+        </div>
+
+        <div class="drag-hint" id="dragHint">⟲ drag to orbit · scroll to zoom · <kbd>click node to inspect</kbd></div>
+
+        <!-- =============================================================== -->
+        <!-- PREMIUM GLASSMORPHIC ENGINE INSPECTION DRAWER                    -->
+        <!-- =============================================================== -->
+        <aside class="detail-drawer" id="detailDrawer" aria-label="Engine Inspection Panel">
+          <div class="drawer-head">
+            <div class="drawer-badge-group">
+              <span class="drawer-num" id="dNum">01</span>
+              <span class="drawer-type-pill" id="dType">ENGINE INSPECTION</span>
+            </div>
+            <button class="close-btn" id="closeDrawerBtn" title="Return to full system view (Esc)">×</button>
+          </div>
+
+          <div class="drawer-body">
+            <div class="drawer-title-block">
+              <h3 id="dTitle">Semantic Engine</h3>
+              <p class="tagline" id="dTagline">Understands issue descriptions using civic lexicon &amp; embeddings.</p>
+            </div>
+
+            <div>
+              <div class="section-label">WHAT IT DOES</div>
+              <div class="desc-box" id="dWhat">
+                Understands the meaning of citizen descriptions using a deterministic civic-domain lexical embedding engine.
+              </div>
+            </div>
+
+            <div>
+              <div class="section-label">LIVE PROCESS PIPELINE</div>
+              <div class="pipeline-steps" id="dPipeline">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+
+            <div>
+              <div class="section-label">LIVE CIVICPULSE EXAMPLE</div>
+              <div class="example-card" id="dExample">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+
+            <div class="score-grid">
+              <div class="score-stat">
+                <div class="s-lbl">SIGNAL SCORE</div>
+                <div class="s-val" id="dScore" style="color:var(--c-sem)">0.86</div>
+              </div>
+              <div class="score-stat">
+                <div class="s-lbl">ROLE IN FUSION</div>
+                <div class="s-val" id="dWeight">25%</div>
+              </div>
+            </div>
+
+            <div>
+              <div class="section-label">WHY THIS MATTERS</div>
+              <div class="importance-callout" id="dImportance" style="border-color:var(--c-sem)">
+                Detects semantically related reports even when citizens use different words to describe the same physical problem.
+              </div>
+            </div>
+          </div>
+
+          <div class="drawer-footer">
+            <button class="nav-arrow-btn" id="prevEngineBtn">← Prev</button>
+            <button class="reset-core-btn" id="resetCoreBtn">[ RESET AI CORE ]</button>
+            <button class="nav-arrow-btn" id="nextEngineBtn">Next →</button>
+          </div>
+        </aside>
+
+      </div>
+
+      <div class="engine-grid">
+        <div class="engine-card" id="card-semantic" data-engine="semantic" style="--ac:var(--c-sem)">
+          <div class="e-num">01</div>
+          <div class="e-icon">◈</div>
+          <h4>Semantic Engine</h4>
+          <p>Understands issue descriptions using civic lexicon &amp; embeddings.</p>
+          <div class="e-weight"><span>Weight</span><span>25%</span></div>
+          <div class="e-bar"><i style="width:25%"></i></div>
+        </div>
+        <div class="engine-card" id="card-geo" data-engine="geo" style="--ac:var(--c-geo)">
+          <div class="e-num">02</div>
+          <div class="e-icon">📍</div>
+          <h4>Geospatial Engine</h4>
+          <p>Calculates real‑world distance, proximity &amp; sensitive‑zone impact.</p>
+          <div class="e-weight"><span>Weight</span><span>35%</span></div>
+          <div class="e-bar"><i style="width:35%"></i></div>
+        </div>
+        <div class="engine-card" id="card-vis" data-engine="visual" style="--ac:var(--c-vis)">
+          <div class="e-num">03</div>
+          <div class="e-icon">🖼</div>
+          <h4>Visual Engine</h4>
+          <p>Analyzes images using perceptual hashing &amp; morphology detection.</p>
+          <div class="e-weight"><span>Weight</span><span>20%</span></div>
+          <div class="e-bar"><i style="width:20%"></i></div>
+        </div>
+        <div class="engine-card" id="card-temp" data-engine="temporal" style="--ac:var(--c-temp)">
+          <div class="e-num">04</div>
+          <div class="e-icon">⏱</div>
+          <h4>Temporal Engine</h4>
+          <p>Measures recency &amp; time decay to identify active, ongoing issues.</p>
+          <div class="e-weight"><span>Weight</span><span>10%</span></div>
+          <div class="e-bar"><i style="width:10%"></i></div>
+        </div>
+        <div class="engine-card" id="card-cat" data-engine="category" style="--ac:var(--c-cat)">
+          <div class="e-num">05</div>
+          <div class="e-icon">▦</div>
+          <h4>Category Engine</h4>
+          <p>Checks category compatibility &amp; domain relationships.</p>
+          <div class="e-weight"><span>Weight</span><span>10%</span></div>
+          <div class="e-bar"><i style="width:10%"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: fusion score + decision -->
+    <div class="right-col">
+      <div class="panel">
+        <div class="panel-title">MULTIMODAL FUSION SCORE</div>
+        <div class="gauge-wrap">
+          <div class="gauge">
+            <svg width="190" height="190" viewBox="0 0 190 190">
+              <circle cx="95" cy="95" r="82" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="12"/>
+              <circle id="gaugeArc" cx="95" cy="95" r="82" fill="none" stroke="url(#gaugeGrad)" stroke-width="12" stroke-linecap="round" stroke-dasharray="515" stroke-dashoffset="515"/>
+              <defs>
+                <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#4d9fff"/>
+                  <stop offset="55%" stop-color="#34d399"/>
+                  <stop offset="100%" stop-color="#b18cf7"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="gauge-label"><div class="pct" id="pctText">0%</div><div class="tag">HIGH PROBABILITY DUPLICATE</div></div>
+          </div>
+
+          <div class="legend">
+            <div class="legend-row" data-engine="geo"><div class="l-left"><span class="dot" style="background:var(--c-geo)"></span>Geospatial</div><span class="val">35%</span></div>
+            <div class="legend-row" data-engine="semantic"><div class="l-left"><span class="dot" style="background:var(--c-sem)"></span>Semantic</div><span class="val">25%</span></div>
+            <div class="legend-row" data-engine="visual"><div class="l-left"><span class="dot" style="background:var(--c-vis)"></span>Visual</div><span class="val">20%</span></div>
+            <div class="legend-row" data-engine="temporal"><div class="l-left"><span class="dot" style="background:var(--c-temp)"></span>Temporal</div><span class="val">10%</span></div>
+            <div class="legend-row" data-engine="category"><div class="l-left"><span class="dot" style="background:var(--c-cat)"></span>Category</div><span class="val">10%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel decision-box">
+        <div class="decision-head">🛡 AI DECISION PREVIEW</div>
+        <p>This report is highly likely related to an existing incident.</p>
+        <button class="btn" id="inspectFusionBtn">Inspect Multimodal Core <span>→</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------------- LIVE PROCESS FLOW ---------------- -->
+  <section class="flow-section" id="flow">
+    <div class="flow-head">
+      <div>
+        <h2>Live AI process flow</h2>
+        <div class="sub2">One report, five engines, a single fused decision.</div>
+      </div>
+    </div>
+
+    <div class="flow-row">
+      <div class="input-card">
+        <img src="https://images.unsplash.com/photo-1584448097639-99a2c6738c04?q=80&w=600&auto=format&fit=crop" alt="Pothole on road">
+        <div class="loc">📍 SURAT, GUJARAT</div>
+        <blockquote>"Deep pothole near school just outside gate."</blockquote>
+      </div>
+
+      <div class="arrow">→</div>
+
+      <div class="flow-card" data-engine="semantic" style="--ac2:var(--c-sem)">
+        <div class="tag">SEMANTIC ENGINE</div>
+        <div class="name">Understanding text</div>
+        <div class="mini-viz" data-bars="6,10,16,22,28,20,14,9"></div>
+        <div class="score" style="color:var(--c-sem)">0.86</div>
+        <div class="score-lbl">Similarity score</div>
+      </div>
+
+      <div class="flow-card" data-engine="geo" style="--ac2:var(--c-geo)">
+        <div class="tag">GEOSPATIAL ENGINE</div>
+        <div class="name">Location analysis</div>
+        <div class="mini-viz" data-bars="10,18,26,34,30,20,12,8"></div>
+        <div class="score" style="color:var(--c-geo)">0.92</div>
+        <div class="score-lbl">Proximity score</div>
+      </div>
+
+      <div class="flow-card" data-engine="visual" style="--ac2:var(--c-vis)">
+        <div class="tag">VISUAL ENGINE</div>
+        <div class="name">Image analysis</div>
+        <div class="mini-viz" data-bars="8,14,20,17,24,19,13,7"></div>
+        <div class="score" style="color:var(--c-vis)">0.78</div>
+        <div class="score-lbl">Visual score</div>
+      </div>
+
+      <div class="flow-card" data-engine="temporal" style="--ac2:var(--c-temp)">
+        <div class="tag">TEMPORAL ENGINE</div>
+        <div class="name">Time decay analysis</div>
+        <div class="mini-viz" data-bars="24,18,10,14,20,16,11,15"></div>
+        <div class="score" style="color:var(--c-temp)">0.74</div>
+        <div class="score-lbl">Temporal score</div>
+      </div>
+
+      <div class="flow-card" data-engine="category" style="--ac2:var(--c-cat)">
+        <div class="tag">CATEGORY ENGINE</div>
+        <div class="name">Category matching</div>
+        <div class="mini-viz" data-bars="12,20,28,24,18,22,16,10"></div>
+        <div class="score" style="color:var(--c-cat)">0.81</div>
+        <div class="score-lbl">Category score</div>
+      </div>
+
+      <div class="output-card" data-engine="fusion">
+        <div class="tag">FUSION OUTPUT</div>
+        <div class="name">Overall score</div>
+        <div class="score">82%</div>
+        <div class="output-pill">HIGH PROBABILITY DUPLICATE</div>
+        <div class="output-action">✓ Link to existing incident</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------------- FEATURES ---------------- -->
+  <section class="features" id="features">
+    <div class="feature"><div class="ico">⚡</div><h5>Real‑time intelligence</h5><p>Sub‑second analysis &amp; instant correlation.</p></div>
+    <div class="feature"><div class="ico">⚛</div><h5>Multimodal fusion</h5><p>Five AI engines, one smart decision.</p></div>
+    <div class="feature"><div class="ico">🛡</div><h5>Evidence‑backed</h5><p>Every decision backed by data &amp; signals.</p></div>
+    <div class="feature"><div class="ico">🧠</div><h5>Adaptive learning</h5><p>Continuously improves from feedback &amp; outcomes.</p></div>
+    <div class="feature"><div class="ico">🔒</div><h5>Privacy first</h5><p>Secure, role‑based access &amp; data protection.</p></div>
+    <div class="feature"><div class="ico">👁</div><h5>Explainable AI</h5><p>Transparent scores, signals &amp; reasoning.</p></div>
+  </section>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ---------------- starfield background (2D canvas) ---------------- */
+(function(){
+  const c = document.getElementById('stars');
+  const ctx = c.getContext('2d');
+  let stars = [];
+  function resize(){
+    c.width = window.innerWidth; c.height = document.body.scrollHeight;
+    stars = [];
+    const n = Math.floor((c.width*c.height)/9000);
+    for(let i=0;i<n;i++){
+      stars.push({x:Math.random()*c.width, y:Math.random()*c.height, r:Math.random()*1.2+0.2, a:Math.random()*0.6+0.15, s:Math.random()*0.02});
+    }
+  }
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    for(const s of stars){
+      s.a += (Math.random()-0.5)*0.02;
+      s.a = Math.max(0.1, Math.min(0.8, s.a));
+      ctx.beginPath();
+      ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle = 'rgba(200,220,255,'+s.a+')';
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize', resize);
+  resize(); draw();
+})();
+
+/* ---------------- mini bar visualizers ---------------- */
+document.querySelectorAll('.mini-viz').forEach(el=>{
+  const bars = el.dataset.bars.split(',');
+  bars.forEach(v=>{
+    const bar = document.createElement('i');
+    bar.style.height = v+'px';
+    el.appendChild(bar);
+  });
+});
+
+/* ---------------- animated gauge ---------------- */
+window.addEventListener('load', ()=>{
+  const arc = document.getElementById('gaugeArc');
+  const txt = document.getElementById('pctText');
+  const target = 82, circumference = 515;
+  let val = 0;
+  const dur = 1400, start = performance.now();
+  function step(t){
+    const p = Math.min(1, (t-start)/dur);
+    const eased = 1 - Math.pow(1-p, 3);
+    val = target*eased;
+    arc.style.strokeDashoffset = circumference - (circumference*val/100);
+    txt.textContent = Math.round(val)+'%';
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+});
+
+/* ========================================================================= */
+/* ENGINE INSPECTION SYSTEM DATA STORE                                       */
+/* ========================================================================= */
+const ENGINE_METADATA = {
+  semantic: {
+    num: "01",
+    id: "semantic",
+    name: "Semantic Intelligence",
+    color: "#4d9fff",
+    colorHex: 0x4d9fff,
+    weight: "25%",
+    score: "0.86",
+    tagline: "Understands issue descriptions using civic lexicon & embeddings.",
+    what: "Understands the meaning of citizen descriptions using a deterministic civic-domain lexical embedding engine.",
+    pipeline: [
+      { step: "Citizen Description", sub: "Unstructured natural language input" },
+      { step: "Civic Terminology Detection", sub: "28-dimensional vocabulary mapping" },
+      { step: "Feature Vectorization", sub: "Dense keyword frequency weights" },
+      { step: "L2 Normalization & Cosine Sim", sub: "Directional similarity [0.0 - 1.0]" }
+    ],
+    example: [
+      { k: "Citizen Input", v: '"Large crater near the school on the main road"' },
+      { k: "Detected Concepts", v: "pothole, crater, road damage, safety risk" },
+      { k: "Feature Dimension", v: "28-D Lexical Vector (L2 Normalized)" },
+      { k: "Cosine Similarity", v: "0.86 (High Confidence Match)" }
+    ],
+    importance: "Detects semantically related reports even when citizens use different vernacular or dialects to describe the same physical real-world problem."
+  },
+  geo: {
+    num: "02",
+    id: "geo",
+    name: "Geospatial Intelligence",
+    color: "#34d399",
+    colorHex: 0x34d399,
+    weight: "35%",
+    score: "0.96",
+    tagline: "Calculates real-world distance, proximity & sensitive-zone impact.",
+    what: "Calculates real-world geographic proximity between incoming citizen reports and existing incident clusters using spherical geometry.",
+    pipeline: [
+      { step: "Citizen GPS Coordinates", sub: "Mobile telemetry latitude & longitude" },
+      { step: "Cluster Centroid Proximity", sub: "Existing incident geospatial radius" },
+      { step: "Haversine Distance Math", sub: "Great-circle surface calculation (meters)" },
+      { step: "Non-Linear Decay Score", sub: "Municipal cluster horizon (650m cutoff)" }
+    ],
+    example: [
+      { k: "Incoming Report", v: "21.1702° N, 72.8311° E" },
+      { k: "Existing Incident", v: "21.1705° N, 72.8314° E" },
+      { k: "Surface Distance", v: "42 metres" },
+      { k: "Municipal Horizon", v: "650 metres (Score: 0.96)" }
+    ],
+    importance: "Prevents geographically distant incidents from being incorrectly merged even if their textual descriptions or photos look identical."
+  },
+  visual: {
+    num: "03",
+    id: "visual",
+    name: "Visual Evidence Intelligence",
+    color: "#b18cf7",
+    colorHex: 0xb18cf7,
+    weight: "20%",
+    score: "0.78",
+    tagline: "Analyzes images using perceptual hashing & morphology detection.",
+    what: "Analyzes citizen-submitted photographic evidence to compare physical hazard appearance and structural distress.",
+    pipeline: [
+      { step: "Citizen Photo Ingestion", sub: "Base64 / Data URL upload validation" },
+      { step: "Image Signature Extraction", sub: "SHA-256 16-character perceptual digest" },
+      { step: "Hazard Morphology Detection", sub: "Pavement, hydraulic, debris classification" },
+      { step: "Visual Similarity Matching", sub: "Weighted digest character agreement" }
+    ],
+    example: [
+      { k: "Evidence Status", v: "AVAILABLE (Ground truth captured)" },
+      { k: "Detected Hazard", v: "Pavement Distress / Crater Morphology" },
+      { k: "Digest Match", v: "14 / 16 Hexadecimal Characters" },
+      { k: "Visual Score", v: "0.78 (Strong Photographic Corroboration)" }
+    ],
+    importance: "Provides additional physical evidence when multiple citizens photograph the same hazard. Visual evidence alone cannot force a merge without geospatial validation."
+  },
+  temporal: {
+    num: "04",
+    id: "temporal",
+    name: "Temporal Intelligence",
+    color: "#fb923c",
+    colorHex: 0xfb923c,
+    weight: "10%",
+    score: "0.74",
+    tagline: "Measures recency & time decay to identify active, ongoing issues.",
+    what: "Measures how closely reports occur in time to determine whether they describe an active, concurrent ongoing incident.",
+    pipeline: [
+      { step: "Incoming Timestamp", sub: "ISO-8601 citizen intake clock" },
+      { step: "Cluster Genesis Timestamp", sub: "Master incident initiation time" },
+      { step: "Elapsed Time Delta (Δt)", sub: "Hours between submissions" },
+      { step: "72-Hour Exponential Decay", sub: "Temporal proximity decay curve" }
+    ],
+    example: [
+      { k: "Incoming Report", v: "2 hours ago" },
+      { k: "Existing Cluster", v: "5 hours ago" },
+      { k: "Elapsed Time Gap", v: "3.0 hours" },
+      { k: "Temporal Score", v: "0.74 (Active Ongoing Surge)" }
+    ],
+    importance: "Helps distinguish active ongoing municipal emergencies from unrelated reports submitted weeks or months apart at the same recurring location."
+  },
+  category: {
+    num: "05",
+    id: "category",
+    name: "Category Intelligence",
+    color: "#f2c744",
+    colorHex: 0xf2c744,
+    weight: "10%",
+    score: "0.81",
+    tagline: "Checks category compatibility & domain relationships.",
+    what: "Evaluates category compatibility and domain relationships between municipal civic issue classifications.",
+    pipeline: [
+      { step: "Incoming Category", sub: "Citizen or NLP-inferred domain" },
+      { step: "Cluster Target Category", sub: "Existing incident primary class" },
+      { step: "Domain Taxonomy Graph", sub: "Roads, Water, Sanitation, Power" },
+      { step: "Compatibility Matrix", sub: "Exact match, related, or conflict" }
+    ],
+    example: [
+      { k: "Incoming Label", v: "ROAD DAMAGE" },
+      { k: "Existing Cluster", v: "POTHOLE" },
+      { k: "Domain Affinity", v: "STRONG COMPATIBILITY MATCH" },
+      { k: "Category Score", v: "0.81 (Structural Alignment)" }
+    ],
+    importance: "Adds structured domain taxonomy checks to ensure sewage spills are never conflated into road resurfacing tickets without dedicated review."
+  },
+  fusion: {
+    num: "CORE",
+    id: "fusion",
+    name: "Multimodal Fusion Core",
+    color: "#38bdf8",
+    colorHex: 0x38bdf8,
+    weight: "100%",
+    score: "82%",
+    tagline: "Fuses five independent signals into a single explainable AI decision.",
+    what: "Combines Geospatial, Semantic, Visual, Temporal, and Category signals with dynamic weight normalization into a single transparent score.",
+    pipeline: [
+      { step: "Multi-Signal Extraction", sub: "Geo (35%), Sem (25%), Vis (20%), Temp (10%), Cat (10%)" },
+      { step: "Dynamic Normalization", sub: "Redistributes visual weight if photos absent" },
+      { step: "Weighted Composite Sum", sub: "Score = wg*G + ws*S + wv*V + wt*T + wc*C" },
+      { step: "Automated Decision", sub: ">=72% duplicate link; <50% new incident" }
+    ],
+    example: [
+      { k: "Formula", v: "Score = 0.35(0.92) + 0.25(0.86) + 0.20(0.78) + 0.10(0.74) + 0.10(0.81)" },
+      { k: "Fused Score", v: "82% (Normalized 0 - 100)" },
+      { k: "Classification", v: "HIGH PROBABILITY DUPLICATE" },
+      { k: "Action", v: "LINK TO EXISTING INCIDENT CLUSTER" }
+    ],
+    importance: "Eliminates duplicate municipal dispatches, concentrates community evidence, and prevents operational alert fatigue."
+  }
+};
+
+const ENGINE_ORDER = ["semantic", "geo", "visual", "temporal", "category", "fusion"];
+
+/* ========================================================================= */
+/* THREE.JS 3D INTERACTIVE OBSERVATORY ENGINE                                */
+/* ========================================================================= */
+(function(){
+  const holder = document.getElementById('canvas-holder');
+  let W = holder.clientWidth, H = holder.clientHeight;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(48, W/H, 0.1, 100);
+  camera.position.set(0, 0.6, 9.5);
+
+  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  renderer.setSize(W,H);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  holder.appendChild(renderer.domElement);
+
+  // Lighting
+  scene.add(new THREE.AmbientLight(0x6677aa, 0.9));
+  const pl = new THREE.PointLight(0x4d9fff, 2.4, 30);
+  pl.position.set(4,4,6);
+  scene.add(pl);
+
+  // ---- CENTRAL FUSION CORE GROUP ----
+  const core = new THREE.Group();
+  core.userData = { id: 'fusion', type: 'core', name: 'Multimodal Fusion Core' };
+  scene.add(core);
+
+  // Icosahedron wireframe
+  const coreGeo = new THREE.IcosahedronGeometry(1.15, 1);
+  const coreMat = new THREE.MeshBasicMaterial({color:0x4d9fff, wireframe:true, transparent:true, opacity:0.85});
+  const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+  coreMesh.userData = { id: 'fusion' };
+  core.add(coreMesh);
+
+  const coreGeo2 = new THREE.IcosahedronGeometry(1.15, 3);
+  const coreMat2 = new THREE.MeshBasicMaterial({color:0x9fc4ff, wireframe:true, transparent:true, opacity:0.12});
+  const coreMesh2 = new THREE.Mesh(coreGeo2, coreMat2);
+  core.add(coreMesh2);
+
+  // Inner solid glow sphere (clickable core target)
+  const glowGeo = new THREE.SphereGeometry(0.88, 32, 32);
+  const glowMat = new THREE.MeshBasicMaterial({color:0x1c3a66, transparent:true, opacity:0.55});
+  const glowMesh = new THREE.Mesh(glowGeo, glowMat);
+  glowMesh.userData = { id: 'fusion', name: 'Multimodal Fusion Core' };
+  core.add(glowMesh);
+
+  // Point cloud inside core (neurons)
+  const neuronCount = 240;
+  const npos = new Float32Array(neuronCount*3);
+  for(let i=0;i<neuronCount;i++){
+    const r = 0.95*Math.cbrt(Math.random());
+    const th = Math.random()*Math.PI*2, ph = Math.acos(2*Math.random()-1);
+    npos[i*3] = r*Math.sin(ph)*Math.cos(th);
+    npos[i*3+1] = r*Math.sin(ph)*Math.sin(th);
+    npos[i*3+2] = r*Math.cos(ph);
+  }
+  const npGeo = new THREE.BufferGeometry();
+  npGeo.setAttribute('position', new THREE.BufferAttribute(npos,3));
+  const npMat = new THREE.PointsMaterial({color:0xbfe0ff, size:0.035, transparent:true, opacity:0.9});
+  core.add(new THREE.Points(npGeo, npMat));
+
+  // ---- 5 ORBITING ENGINE NODES ----
+  const engineData = [
+    {id:'semantic', name:'Semantic',   color:0x4d9fff, weight:25, angle: 90},
+    {id:'geo',      name:'Geospatial', color:0x34d399, weight:35, angle: 18},
+    {id:'temporal', name:'Temporal',   color:0xfb923c, weight:10, angle:-54},
+    {id:'category', name:'Category',   color:0xf2c744, weight:10, angle:234},
+    {id:'visual',   name:'Visual',     color:0xb18cf7, weight:20, angle:162},
+  ];
+
+  const orbitRadius = 3.05;
+  const nodes = [];
+  const labels = [];
+  const connectionLines = [];
+  const clickableObjects = [glowMesh, coreMesh];
+
+  // Dynamic particle streams along lines
+  const streamParticles = [];
+
+  engineData.forEach((e,i)=>{
+    const rad = THREE.MathUtils.degToRad(e.angle);
+    const x = Math.cos(rad)*orbitRadius;
+    const y = Math.sin(rad*0.55)*0.9;
+    const z = Math.sin(rad)*orbitRadius;
+
+    // Connecting line to core
+    const lineGeo = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(0,0,0), new THREE.Vector3(x,y,z)
+    ]);
+    const lineMat = new THREE.LineBasicMaterial({color:e.color, transparent:true, opacity:0.45});
+    const lineMesh = new THREE.Line(lineGeo, lineMat);
+    scene.add(lineMesh);
+    connectionLines.push({line:lineMesh, mat:lineMat, defaultColor:e.color, id:e.id});
+
+    // Node group: platform + core sphere
+    const g = new THREE.Group();
+    g.position.set(x,y,z);
+    g.userData = { id: e.id, name: e.name + ' Engine' };
+
+    const nodeGlowMat = new THREE.MeshBasicMaterial({color:e.color, transparent:true, opacity:0.25});
+    const nodeGlow = new THREE.Mesh(new THREE.SphereGeometry(0.36,24,24), nodeGlowMat);
+    g.add(nodeGlow);
+
+    const nodeCoreMat = new THREE.MeshStandardMaterial({
+      color:e.color, emissive:e.color, emissiveIntensity:0.9, roughness:0.3
+    });
+    const nodeCore = new THREE.Mesh(new THREE.SphereGeometry(0.18,20,20), nodeCoreMat);
+    nodeCore.userData = { id: e.id, name: e.name + ' Engine' };
+    g.add(nodeCore);
+    clickableObjects.push(nodeCore);
+    clickableObjects.push(nodeGlow);
+
+    const ringGeo = new THREE.RingGeometry(0.24,0.27,32);
+    const ringMat = new THREE.MeshBasicMaterial({color:e.color, side:THREE.DoubleSide, transparent:true, opacity:0.6});
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI/2.3;
+    g.add(ring);
+
+    scene.add(g);
+    nodes.push({
+      id: e.id,
+      g,
+      coreMesh: nodeCore,
+      glowMesh: nodeGlow,
+      ring,
+      glowMat: nodeGlowMat,
+      coreMat: nodeCoreMat,
+      base: new THREE.Vector3(x,y,z),
+      speed: 0.6 + Math.random()*0.3,
+      phase: Math.random()*10,
+      color: e.color
+    });
+
+    // Particle stream along connection line
+    const pCount = 14;
+    const pPos = new Float32Array(pCount * 3);
+    const pProgress = new Float32Array(pCount);
+    for(let p=0; p<pCount; p++){
+      pProgress[p] = p / pCount;
+      pPos[p*3] = x * (1 - pProgress[p]);
+      pPos[p*3+1] = y * (1 - pProgress[p]);
+      pPos[p*3+2] = z * (1 - pProgress[p]);
+    }
+    const pGeo = new THREE.BufferGeometry();
+    pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+    const pMat = new THREE.PointsMaterial({
+      color: e.color,
+      size: 0.045,
+      transparent: true,
+      opacity: 0.7
+    });
+    const pPoints = new THREE.Points(pGeo, pMat);
+    scene.add(pPoints);
+    streamParticles.push({
+      points: pPoints,
+      geo: pGeo,
+      mat: pMat,
+      progress: pProgress,
+      baseVec: new THREE.Vector3(x,y,z),
+      id: e.id
+    });
+
+    // HTML label overlay
+    const tag = document.createElement('div');
+    tag.className = 'engine-tag';
+    tag.dataset.engine = e.id;
+    tag.style.borderColor = '#'+e.color.toString(16).padStart(6,'0');
+    tag.style.color = '#'+e.color.toString(16).padStart(6,'0');
+    tag.style.background = 'rgba(5,7,15,0.7)';
+    tag.textContent = e.name.toUpperCase() + ' · ' + e.weight + '%';
+    tag.addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      selectEngine(e.id);
+    });
+    holder.appendChild(tag);
+    labels.push({el:tag, node:nodes[i], id:e.id});
+  });
+
+  // Faint outer sphere shell for depth
+  const shell = new THREE.Mesh(
+    new THREE.SphereGeometry(4.4, 32, 32),
+    new THREE.MeshBasicMaterial({color:0x1a2540, wireframe:true, transparent:true, opacity:0.06})
+  );
+  scene.add(shell);
+
+  // Background dust
+  const dustCount = 280;
+  const dpos = new Float32Array(dustCount*3);
+  for(let i=0;i<dustCount;i++){
+    dpos[i*3] = (Math.random()-0.5)*14;
+    dpos[i*3+1] = (Math.random()-0.5)*8;
+    dpos[i*3+2] = (Math.random()-0.5)*14;
+  }
+  const dGeo = new THREE.BufferGeometry();
+  dGeo.setAttribute('position', new THREE.BufferAttribute(dpos,3));
+  const dMat = new THREE.PointsMaterial({color:0x5578aa, size:0.02, transparent:true, opacity:0.5});
+  scene.add(new THREE.Points(dGeo, dMat));
+
+  // =========================================================================
+  // STATE MANAGEMENT & CAMERA INTERPOLATION
+  // =========================================================================
+  let selectedEngine = null; // 'semantic' | 'geo' | 'visual' | 'temporal' | 'category' | 'fusion' | null
+  let hoveredId = null;
+
+  const tooltipEl = document.getElementById('hoverTooltip');
+  const tooltipTitle = document.getElementById('hoverTitle');
+  const detailDrawer = document.getElementById('detailDrawer');
+
+  let isDown = false, startX = 0, startY = 0, lastX = 0, lastY = 0;
+  let dragDistance = 0;
+  const DRAG_CLICK_THRESHOLD = 5; // Pixels to distinguish click from drag
+
+  let rotX = 0.15, rotY = 0.35, targetRotX = 0.15, targetRotY = 0.35;
+  let dist = 9.5, targetDist = 9.5;
+  let lookTarget = new THREE.Vector3(0, 0, 0);
+  let currentLook = new THREE.Vector3(0, 0, 0);
+
+  let autoRotate = true;
+
+  // Raycaster
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+
+  function getRaycastHit(e){
+    const rect = holder.getBoundingClientRect();
+    mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(clickableObjects, true);
+    if(intersects.length > 0){
+      let obj = intersects[0].object;
+      while(obj && !obj.userData?.id && obj.parent){
+        obj = obj.parent;
+      }
+      if(obj?.userData?.id) return obj.userData.id;
+    }
+    return null;
+  }
+
+  // Pointer Down
+  holder.addEventListener('pointerdown', e => {
+    isDown = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    dragDistance = 0;
+    holder.setPointerCapture(e.pointerId);
+  });
+
+  // Pointer Move (Raycasting + Drag Orbit)
+  holder.addEventListener('pointermove', e => {
+    const rect = holder.getBoundingClientRect();
+    const screenX = e.clientX - rect.left;
+    const screenY = e.clientY - rect.top;
+
+    if (isDown) {
+      const dx = e.clientX - lastX, dy = e.clientY - lastY;
+      dragDistance += Math.abs(dx) + Math.abs(dy);
+      lastX = e.clientX;
+      lastY = e.clientY;
+      targetRotY += dx * 0.006;
+      targetRotX += dy * 0.006;
+      targetRotX = Math.max(-0.9, Math.min(0.9, targetRotX));
+      autoRotate = false;
+      tooltipEl.classList.remove('visible');
+      return;
+    }
+
+    // Hover Detection via Raycasting
+    const hitId = getRaycastHit(e);
+    if (hitId) {
+      holder.style.cursor = 'pointer';
+      if (hoveredId !== hitId) {
+        hoveredId = hitId;
+        const meta = ENGINE_METADATA[hitId];
+        tooltipTitle.textContent = (meta ? meta.name : hitId).toUpperCase();
+        tooltipTitle.style.color = meta ? meta.color : '#fff';
+      }
+      tooltipEl.style.left = screenX + 'px';
+      tooltipEl.style.top = screenY + 'px';
+      tooltipEl.classList.add('visible');
+    } else {
+      holder.style.cursor = isDown ? 'grabbing' : 'grab';
+      if (hoveredId) {
+        hoveredId = null;
+        tooltipEl.classList.remove('visible');
+      }
+    }
+  });
+
+  // Pointer Up (Click Selection if not dragged)
+  holder.addEventListener('pointerup', e => {
+    isDown = false;
+    try { holder.releasePointerCapture(e.pointerId); } catch {}
+    if (dragDistance < DRAG_CLICK_THRESHOLD) {
+      const hitId = getRaycastHit(e);
+      if (hitId) {
+        selectEngine(hitId);
+      }
+    }
+  });
+
+  holder.addEventListener('pointerleave', () => {
+    isDown = false;
+    hoveredId = null;
+    tooltipEl.classList.remove('visible');
+  });
+
+  // Zoom
+  holder.addEventListener('wheel', e => {
+    e.preventDefault();
+    targetDist += e.deltaY * 0.004;
+    targetDist = Math.max(5.0, Math.min(14, targetDist));
+  }, { passive:false });
+
+  // =========================================================================
+  // SELECTION & ENGINE INSPECTION SYSTEM
+  // =========================================================================
+  function selectEngine(id){
+    if(selectedEngine === id && detailDrawer.classList.contains('open')) return;
+    selectedEngine = id;
+    autoRotate = false;
+
+    // Visual state updates
+    const isCore = (id === 'fusion');
+    const meta = ENGINE_METADATA[id];
+    if(!meta) return;
+
+    // 1. Update 3D Nodes opacity and scale
+    nodes.forEach(n => {
+      const isThis = (n.id === id);
+      if(isCore){
+        // In core mode, all nodes send streams to core
+        n.coreMat.opacity = 0.85;
+        n.glowMat.opacity = 0.35;
+        n.g.scale.setScalar(1.0);
+      } else if(isThis){
+        n.coreMat.opacity = 1.0;
+        n.glowMat.opacity = 0.75;
+        n.glowMesh.scale.setScalar(1.4);
+        n.g.scale.setScalar(1.35);
+      } else {
+        n.coreMat.opacity = 0.28;
+        n.glowMat.opacity = 0.10;
+        n.glowMesh.scale.setScalar(1.0);
+        n.g.scale.setScalar(0.88);
+      }
+    });
+
+    // 2. Central core glow
+    if(isCore){
+      coreMat.opacity = 1.0;
+      glowMat.opacity = 0.85;
+      core.scale.setScalar(1.25);
+    } else {
+      coreMat.opacity = 0.7;
+      glowMat.opacity = 0.45;
+      core.scale.setScalar(1.0);
+    }
+
+    // 3. Connection Lines Brightness
+    connectionLines.forEach(cl => {
+      if(isCore || cl.id === id){
+        cl.mat.opacity = 0.9;
+        cl.mat.linewidth = 2;
+      } else {
+        cl.mat.opacity = 0.12;
+        cl.mat.linewidth = 1;
+      }
+    });
+
+    // 4. Smooth Camera Focus
+    if(isCore){
+      targetRotX = 0.2;
+      targetRotY = 0.4;
+      targetDist = 7.5;
+      lookTarget.set(0, 0.2, 0);
+    } else {
+      const activeNode = nodes.find(n => n.id === id);
+      if(activeNode){
+        const base = activeNode.base;
+        const angle = Math.atan2(base.x, base.z);
+        targetRotY = angle - 0.2;
+        targetRotX = 0.18;
+        targetDist = 8.0;
+        // Pan slightly left so drawer doesn't obstruct node
+        lookTarget.set(base.x * 0.4 - 0.6, base.y * 0.4, base.z * 0.4);
+      }
+    }
+
+    // 5. Update HTML Tags and Engine Cards
+    labels.forEach(l => {
+      if(l.id === id){
+        l.el.classList.add('active');
+      } else {
+        l.el.classList.remove('active');
+      }
+    });
+
+    document.querySelectorAll('.engine-card').forEach(ec => {
+      if(ec.dataset.engine === id){
+        ec.classList.add('active');
+        ec.scrollIntoView({ behavior:'smooth', block:'nearest' });
+      } else {
+        ec.classList.remove('active');
+      }
+    });
+
+    // 6. Populate and Open Glassmorphic Detail Drawer
+    populateDrawer(meta);
+    detailDrawer.classList.add('open');
+  }
+
+  function resetToOverview(){
+    selectedEngine = null;
+    autoRotate = true;
+    targetDist = 9.5;
+    targetRotX = 0.15;
+    lookTarget.set(0, 0, 0);
+
+    // Restore all 3D nodes
+    nodes.forEach(n => {
+      n.coreMat.opacity = 1.0;
+      n.glowMat.opacity = 0.25;
+      n.glowMesh.scale.setScalar(1.0);
+      n.g.scale.setScalar(1.0);
+    });
+
+    coreMat.opacity = 0.85;
+    glowMat.opacity = 0.55;
+    core.scale.setScalar(1.0);
+
+    connectionLines.forEach(cl => {
+      cl.mat.opacity = 0.45;
+    });
+
+    labels.forEach(l => l.el.classList.remove('active'));
+    document.querySelectorAll('.engine-card').forEach(ec => ec.classList.remove('active'));
+
+    detailDrawer.classList.remove('open');
+  }
+
+  function populateDrawer(m){
+    document.getElementById('dNum').textContent = m.num;
+    document.getElementById('dNum').style.borderColor = m.color;
+    document.getElementById('dNum').style.color = m.color;
+    document.getElementById('dType').textContent = m.id === 'fusion' ? 'CENTRAL FUSION OBSERVER' : 'AI ENGINE OBSERVATORY';
+
+    document.getElementById('dTitle').textContent = m.name;
+    document.getElementById('dTagline').textContent = m.tagline;
+    document.getElementById('dWhat').textContent = m.what;
+
+    // Pipeline
+    const pContainer = document.getElementById('dPipeline');
+    pContainer.innerHTML = '';
+    m.pipeline.forEach((p, idx) => {
+      const stepEl = document.createElement('div');
+      stepEl.className = 'p-step';
+      stepEl.innerHTML = `
+        <span class="p-node" style="background:${m.color}22; color:${m.color}; border:1px solid ${m.color}55">${idx+1}</span>
+        <div style="flex:1">
+          <div style="color:#fff; font-weight:600">${p.step}</div>
+          <div style="font-size:10px; color:var(--dim)">${p.sub}</div>
+        </div>
+        ${idx < m.pipeline.length - 1 ? '<span class="arrow-sm">↓</span>' : '✓'}
+      `;
+      pContainer.appendChild(stepEl);
+    });
+
+    // Example
+    const exContainer = document.getElementById('dExample');
+    exContainer.innerHTML = '';
+    m.example.forEach(ex => {
+      const row = document.createElement('div');
+      row.className = 'example-row';
+      row.innerHTML = `<span class="ex-k">${ex.k}</span><span class="ex-v">${ex.v}</span>`;
+      exContainer.appendChild(row);
+    });
+
+    // Stats
+    const scoreEl = document.getElementById('dScore');
+    scoreEl.textContent = m.score;
+    scoreEl.style.color = m.color;
+
+    document.getElementById('dWeight').textContent = m.weight;
+
+    // Importance
+    const impEl = document.getElementById('dImportance');
+    impEl.textContent = m.importance;
+    impEl.style.borderColor = m.color;
+  }
+
+  // Drawer Controls
+  document.getElementById('closeDrawerBtn').addEventListener('click', resetToOverview);
+  document.getElementById('resetCoreBtn').addEventListener('click', resetToOverview);
+
+  document.getElementById('prevEngineBtn').addEventListener('click', () => {
+    const curIdx = ENGINE_ORDER.indexOf(selectedEngine || 'semantic');
+    const prevIdx = (curIdx - 1 + ENGINE_ORDER.length) % ENGINE_ORDER.length;
+    selectEngine(ENGINE_ORDER[prevIdx]);
+  });
+
+  document.getElementById('nextEngineBtn').addEventListener('click', () => {
+    const curIdx = ENGINE_ORDER.indexOf(selectedEngine || 'semantic');
+    const nextIdx = (curIdx + 1) % ENGINE_ORDER.length;
+    selectEngine(ENGINE_ORDER[nextIdx]);
+  });
+
+  // Connect Engine Cards and Flow Cards to selection
+  document.querySelectorAll('.engine-card, .flow-card, .legend-row, .output-card').forEach(el => {
+    el.addEventListener('click', () => {
+      const eng = el.dataset.engine;
+      if(eng) selectEngine(eng);
+    });
+  });
+
+  document.getElementById('inspectFusionBtn').addEventListener('click', () => {
+    selectEngine('fusion');
+  });
+
+  // Keyboard accessibility
+  window.addEventListener('keydown', e => {
+    if(e.key === 'Escape') resetToOverview();
+    if(e.key === 'ArrowRight' && selectedEngine) {
+      const curIdx = ENGINE_ORDER.indexOf(selectedEngine);
+      selectEngine(ENGINE_ORDER[(curIdx + 1) % ENGINE_ORDER.length]);
+    }
+    if(e.key === 'ArrowLeft' && selectedEngine) {
+      const curIdx = ENGINE_ORDER.indexOf(selectedEngine);
+      selectEngine(ENGINE_ORDER[(curIdx - 1 + ENGINE_ORDER.length) % ENGINE_ORDER.length]);
+    }
+  });
+
+  // Resize
+  function resize(){
+    W = holder.clientWidth; H = holder.clientHeight;
+    camera.aspect = W/H; camera.updateProjectionMatrix();
+    renderer.setSize(W,H);
+  }
+  window.addEventListener('resize', resize);
+
+  // =========================================================================
+  // ANIMATION LOOP WITH DATA PARTICLES & CAMERA DAMPING
+  // =========================================================================
+  const clock = new THREE.Clock();
+  const vector = new THREE.Vector3();
+
+  function animate(){
+    requestAnimationFrame(animate);
+    const dt = clock.getDelta();
+    const t = clock.getElapsedTime();
+
+    if(autoRotate && !selectedEngine){
+      targetRotY += 0.0018;
+    }
+
+    // Camera damping
+    rotX += (targetRotX - rotX) * 0.06;
+    rotY += (targetRotY - rotY) * 0.06;
+    dist += (targetDist - dist) * 0.08;
+    currentLook.lerp(lookTarget, 0.08);
+
+    camera.position.x = currentLook.x + Math.sin(rotY) * Math.cos(rotX) * dist;
+    camera.position.z = currentLook.z + Math.cos(rotY) * Math.cos(rotX) * dist;
+    camera.position.y = currentLook.y + Math.sin(rotX) * dist * 0.6 + 0.6;
+    camera.lookAt(currentLook);
+
+    // Core pulsing & neural rotation
+    coreMesh.rotation.y = t * 0.15;
+    coreMesh.rotation.x = t * 0.08;
+    coreMesh2.rotation.y = -t * 0.1;
+    if(!selectedEngine || selectedEngine === 'fusion'){
+      coreMesh.material.opacity = 0.7 + Math.sin(t * 1.4) * 0.12;
+    }
+
+    // Node bobbing & halo rotation
+    nodes.forEach((n, i) => {
+      const bob = Math.sin(t * n.speed + n.phase) * 0.12;
+      n.g.position.set(n.base.x, n.base.y + bob, n.base.z);
+      n.ring.rotation.z = t * 0.6;
+      if(n.id !== selectedEngine){
+        n.coreMesh.scale.setScalar(1 + Math.sin(t * 2 + n.phase) * 0.08);
+      }
+    });
+
+    // Animate Data Particles along connection paths
+    streamParticles.forEach(sp => {
+      const isSelected = (selectedEngine === sp.id);
+      const isFusionMode = (selectedEngine === 'fusion');
+      
+      // Active speed: faster when selected
+      const speed = (isSelected || isFusionMode) ? 1.4 : 0.45;
+      const count = sp.progress.length;
+      const positions = sp.geo.attributes.position.array;
+
+      for(let p=0; p<count; p++){
+        sp.progress[p] += dt * speed * 0.35;
+        if(sp.progress[p] > 1.0) sp.progress[p] -= 1.0;
+
+        const pr = sp.progress[p];
+        // Stream flows from node (baseVec) toward core (0,0,0)
+        positions[p*3] = sp.baseVec.x * (1 - pr);
+        positions[p*3+1] = sp.baseVec.y * (1 - pr);
+        positions[p*3+2] = sp.baseVec.z * (1 - pr);
+      }
+      sp.geo.attributes.position.needsUpdate = true;
+
+      // Particle intensity and size
+      if(isSelected || isFusionMode){
+        sp.mat.opacity = 0.95;
+        sp.mat.size = 0.06;
+      } else {
+        sp.mat.opacity = 0.35;
+        sp.mat.size = 0.035;
+      }
+    });
+
+    renderer.render(scene, camera);
+
+    // Project 3D tags to screen space
+    labels.forEach(l => {
+      vector.copy(l.node.g.position);
+      vector.project(camera);
+      const x = (vector.x * 0.5 + 0.5) * W;
+      const y = (-vector.y * 0.5 + 0.5) * H;
+      l.el.style.left = x + 'px';
+      l.el.style.top = (y - 32) + 'px';
+      l.el.style.opacity = vector.z < 1 ? '1' : '0';
+    });
+  }
+  animate();
+})();
+</script>
+</body>
+</html>

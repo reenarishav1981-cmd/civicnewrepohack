@@ -1,0 +1,62 @@
+# Node & Build artifacts
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# Environment files - NEVER commit secrets
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+civic pulse zip final/civic pulse/.env
+
+# Python artifacts
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+civic pulse zip final/civic pulse/venv/
+civic pulse zip final/civic pulse/__pycache__/
+civic pulse zip final/civic pulse/.pytest_cache/
+
+# SQLite local databases
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+prisma/dev.db
+prisma/dev.db-journal
+
+# Uploaded local media
+public/uploads/*
+!public/uploads/.gitkeep
+civic pulse zip final/civic pulse/uploads/*
+*/uploads/*
+**/uploads/*
+
+# IDE & OS files
+.DS_Store
+*.pem
+.vscode/
+.idea/
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Generated / backup files
+*.tsbuildinfo
+*.bak
+
+# Legacy unused sub-projects
+civic pulse zip final/civic pulse/core-backend/
+civic pulse zip final/civic pulse/frontend/

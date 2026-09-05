@@ -1,0 +1,310 @@
+// Prisma schema for CivicPulse
+// Production recommendation: PostgreSQL; Local/Demo alternative: SQLite
+// NOTE: String fields are used for status/roles to maintain 100% dual compatibility
+// between SQLite (local development/SIH offline demo) and PostgreSQL (production).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+// CORE ENTITIES
+// -----------------------------------------------------------------------------
+
+model User {
+  id              String         @id @default(cuid())
+  name            String
+  role            String         @default("CITIZEN") // CITIZEN | OPERATOR | WORKER | ADMIN
+  email           String?        @unique
+  phone           String?
+  avatarUrl       String?
+  passwordHash    String?        // For future auth migration
+  teamId          String?
+  isAvailable     Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  team            FieldTeam?     @relation("TeamMembers", fields: [teamId], references: [id], onDelete: SetNull)
+  ledTeams        FieldTeam[]    @relation("TeamLeader")
+  reports         CitizenReport[]
+  evidence        Evidence[]
+  activityLogs    ActivityLog[]
+  assignedTasks   FieldTask[]
+
+  @@index([role])
+  @@index([teamId])
+}
+
+model CitizenReport {
+  id                 String             @id // Custom format e.g. R-8801
+  userId             String
+  userName           String?
+  userPhone          String?
+  incidentId         String?
+  description        String
+  category           String             // Road Hazard | Water Leakage | etc.
+  latitude           Float
+  longitude          Float
+  address            String
+  mediaUrl           String?
+  mediaType          String?            @default("image")
+  status             String             @default("received") // received | correlated | assigned | in_progress | awaiting_verification | resolved
+  source             String             @default("production") // production | demo | simulation
+  embeddingJson      String?            // Future/heuristic vector embedding array
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  incident           Incident?          @relation(fields: [incidentId], references: [id], onDelete: SetNull)
+  evidence           Evidence[]
+  candidateSignals   CorrelationMatch[]
+
+  @@index([incidentId])
+  @@index([category])
+  @@index([status])
+  @@index([source])
+  @@index([latitude, longitude])
+}
+
+model Incident {
+  id                       String                  @id // Custom format e.g. CP-1024
+  title                    String
+  category                 String
+  priority                 String                  @default("medium") // critical | high | medium | low
+  priorityScore            Int                     @default(50)
+  priorityReason           String
+  status                   String                  @default("new") // new | under_review | assigned | in_progress | awaiting_verification | resolved | closed
+  latitude                 Float
+  longitude                Float
+  address                  String
+  zone                     String
+  affectedCitizenEstimate  Int                     @default(1)
+  aiConfidence             Float                   @default(0.0)
+  aiExplanationJson        String?                 // Serialized AIExplanationFactor[]
+  assignedTeamId           String?
+  assignedTeamName         String?
+  assignedWorkerId         String?
+  assignedWorkerName       String?
+  source                   String                  @default("production") // production | demo | simulation
+  beforeEvidenceUrl        String?
+  afterEvidenceUrl         String?
+  citizenFeedbackStatus    String?
+  citizenFeedbackNotes     String?
+  reopenedAt               DateTime?
+  reopenedReason           String?
+  reopenedByCitizenId      String?
+  createdAt                DateTime                @default(now())
+  updatedAt                DateTime                @updatedAt
+
+  reports                  CitizenReport[]
+  fieldTasks               FieldTask[]
+  assignedTeam             FieldTeam?              @relation(fields: [assignedTeamId], references: [id], onDelete: SetNull)
+  timelineEvents           IncidentTimelineEvent[]
+  evidence                 Evidence[]
+  candidateMatches         CorrelationMatch[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([category])
+  @@index([assignedTeamId])
+  @@index([assignedWorkerId])
+  @@index([source])
+  @@index([latitude, longitude])
+}
+
+model FieldTeam {
+  id                String       @id // Custom format e.g. team-alpha
+  department        String
+  name              String
+  leaderId          String?
+  leaderName        String
+  phone             String
+  specialization    String
+  status            String       @default("available") // available | dispatched | busy | off_duty
+  activeIncidentId  String?
+  currentLatitude   Float
+  currentLongitude  Float
+  rating            Float        @default(5.0)
+  tasksCompleted    Int          @default(0)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  leader            User?        @relation("TeamLeader", fields: [leaderId], references: [id], onDelete: SetNull)
+  members           User[]       @relation("TeamMembers")
+  incidents         Incident[]
+  tasks             FieldTask[]
+
+  @@index([status])
+  @@index([department])
+  @@index([leaderId])
+}
+
+model FieldTask {
+  id              String       @id // Custom format e.g. TSK-501
+  incidentId       String
+  teamId           String
+  workerName       String
+  assignedWorkerId String?
+  status           String       @default("assigned") // assigned | en_route | arrived | in_progress | completed
+  priority         String       @default("medium")   // critical | high | medium | low
+  instructions     String
+  siteAddress      String
+  latitude         Float
+  longitude        Float
+  distanceKm       Float        @default(0.0)
+  beforePhotoUrl   String?
+  afterPhotoUrl    String?
+  workerNotes      String?
+  assignedAt       DateTime     @default(now())
+  startedAt        DateTime?
+  completedAt      DateTime?
+  updatedAt        DateTime     @updatedAt
+
+  incident         Incident     @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  team             FieldTeam    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  assignedWorker   User?        @relation(fields: [assignedWorkerId], references: [id], onDelete: SetNull)
+  evidence         Evidence[]
+
+  @@index([incidentId])
+  @@index([teamId])
+  @@index([assignedWorkerId])
+  @@index([status])
+}
+
+model Evidence {
+  id               String          @id @default(cuid())
+  uploadedById     String?
+  incidentId       String?
+  reportId         String?
+  taskId           String?
+  mediaType        String          @default("image") // image | video
+  storageProvider  String          @default("local") // local | s3 | cloudinary
+  storageKey       String?
+  publicUrl        String
+  purpose          String          @default("initial_report") // initial_report | before_work | progress_update | after_work | verification
+  caption          String?
+  metadataJson     String?
+  createdAt        DateTime        @default(now())
+
+  uploadedBy       User?           @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  incident         Incident?       @relation(fields: [incidentId], references: [id], onDelete: SetNull)
+  report           CitizenReport?  @relation(fields: [reportId], references: [id], onDelete: SetNull)
+  task             FieldTask?      @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([incidentId])
+  @@index([reportId])
+  @@index([taskId])
+}
+
+model IncidentTimelineEvent {
+  id           String      @id @default(cuid())
+  incidentId   String
+  time         DateTime    @default(now())
+  title        String
+  description  String
+  type         String      // signal_received | ai_correlated | team_assigned | worker_arrived | work_started | evidence_uploaded | resolved
+  actor        String?
+  metadataJson String?
+
+  incident     Incident    @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  @@index([incidentId])
+  @@index([time])
+}
+
+model ActivityLog {
+  id           String      @id @default(cuid())
+  actorId      String?
+  action       String
+  entityType   String
+  entityId     String
+  metadataJson String?
+  timestamp    DateTime    @default(now())
+
+  actor        User?       @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([timestamp])
+  @@index([entityType, entityId])
+}
+
+model CorrelationMatch {
+  id                 String        @id @default(cuid())
+  reportId           String
+  incidentId         String
+  semanticScore      Float
+  geoDistanceMeters  Float
+  timeDiffHours      Float
+  overallConfidence  Float
+  reasonsJson        String?
+  createdAt          DateTime      @default(now())
+
+  report             CitizenReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  incident           Incident      @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+  @@index([incidentId])
+}
+
+model PredictiveInsight {
+  id           String   @id @default(cuid())
+  type         String   // hotspot | recurrence | escalation | root_cause | trend
+  entityType   String   // INCIDENT | HOTSPOT | ZONE | CATEGORY
+  entityId     String?
+  score        Float    @default(0.0)
+  confidence   Float    @default(0.0)
+  level        String?  // low | moderate | high | critical
+  explanation  String
+  evidenceJson String?  // JSON serialized supporting evidence or factors
+  createdAt    DateTime @default(now())
+
+  @@index([type])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model AIDecisionFeedback {
+  id                String    @id @default(cuid())
+  incidentId        String?
+  reportId          String?
+  operatorId        String
+  decisionType      String    // correlation | priority | category | risk | hotspot
+  aiSuggestedValue  String
+  operatorDecision  String
+  wasAccepted       Boolean   @default(false)
+  overrideReason    String?
+  category          String?
+  correlationScore  Float?
+  createdAt         DateTime  @default(now())
+
+  @@index([decisionType])
+  @@index([incidentId])
+  @@index([operatorId])
+  @@index([createdAt])
+}
+
+model ExecutiveDecision {
+  id                String   @id @default(cuid())
+  recommendationId  String
+  actionType        String
+  targetArea        String?
+  department        String?
+  decision          String   // ACCEPTED | DISMISSED | DEFERRED
+  reason            String?
+  actorId           String
+  actorName         String?
+  metadataJson      String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([recommendationId])
+  @@index([decision])
+  @@index([actorId])
+  @@index([createdAt])
+}
+
+

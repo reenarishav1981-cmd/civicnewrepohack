@@ -1,0 +1,58 @@
+﻿version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: civicpulse-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=civicpulse
+
+  ai-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile.ai
+    container_name: civicpulse-ai-engine
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - PORT=8001
+    depends_on:
+      - mongodb
+
+  core-backend:
+    build:
+      context: ./core-backend
+      dockerfile: Dockerfile
+    container_name: civicpulse-core-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/civicpulse
+      - AI_ENGINE_URL=http://ai-engine:8001
+      - JWT_SECRET=${JWT_SECRET:-default_jwt_secret_civicpulse_key_2026}
+      - CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+    depends_on:
+      - mongodb
+      - ai-engine
+
+  frontend:
+    image: nginx:alpine
+    container_name: civicpulse-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    depends_on:
+      - core-backend
+
+volumes:
+  mongo_data:
